@@ -211,7 +211,7 @@ export default function App() {
 
   if (screen === 'login') {
     return <main className="account-page">
-      <a className="brand account-brand" href="/" onClick={(event) => { event.preventDefault(); navigate('/'); }}><span className="brand-mark"><Sprout size={20} /></span><b>cropguard<span>.ai</span></b></a>
+      <a className="brand account-brand" href="/" onClick={(event) => { event.preventDefault(); navigate('/'); }}><span className="brand-mark"><Sprout size={20} /></span><b>CropGuard AI</b></a>
       <div className="account-layout">
         <section className="account-story">
           <span className="account-kicker"><i /> GROW WITH MORE CONFIDENCE</span>
@@ -231,8 +231,8 @@ export default function App() {
             <button className="button account-submit" disabled={busy}>{busy ? <><LoaderCircle className="spin" size={17} /> Please wait…</> : <>{mode === 'login' ? 'Sign in' : 'Create account'} <ArrowRight size={17} /></>}</button>
             {error && <div className="feedback bad" role="alert">{error}</div>}
           </form>
-          <p className="switch">{mode === 'login' ? 'New to CropGuard?' : 'Already have an account?'} <button onClick={() => { setError(''); setMode(mode === 'login' ? 'register' : 'login'); }}>{mode === 'login' ? 'Create an account' : 'Sign in'}</button></p>
-          <button className="back-link" onClick={() => navigate('/how-it-works')}><ArrowRight size={14} className="back-arrow" /> Explore CropGuard</button>
+          <p className="switch">{mode === 'login' ? 'New to CropGuard AI?' : 'Already have an account?'} <button onClick={() => { setError(''); setMode(mode === 'login' ? 'register' : 'login'); }}>{mode === 'login' ? 'Create an account' : 'Sign in'}</button></p>
+          <button className="back-link" onClick={() => navigate('/how-it-works')}><ArrowRight size={14} className="back-arrow" /> Explore CropGuard AI</button>
         </section>
       </div>
     </main>;
@@ -240,13 +240,13 @@ export default function App() {
 
   if (screen === 'welcome') {
     return <main className="welcome-page">
-      <div className="welcome-top"><a className="brand" href="/" onClick={(event) => { event.preventDefault(); navigate('/'); }}><span className="brand-mark"><Sprout size={20} /></span><b>cropguard<span>.ai</span></b></a>{token && <button className="button signout-button" onClick={signout}><LogOut size={15} /> Sign out</button>}</div>
+      <div className="welcome-top"><a className="brand" href="/" onClick={(event) => { event.preventDefault(); navigate('/'); }}><span className="brand-mark"><Sprout size={20} /></span><b>CropGuard AI</b></a>{token && <button className="button signout-button" onClick={signout}><LogOut size={15} /> Sign out</button>}</div>
       <section className="welcome-center" aria-live="polite">
         <div className="welcome-animation"><span className="welcome-ring ring-a"/><span className="welcome-ring ring-b"/><span className="welcome-sprout"><Sprout size={50} /></span><span className="welcome-check"><Check size={18} /></span></div>
         <span className="account-kicker"><i /> YOUR GROWING JOURNEY STARTS HERE</span>
         <h1>Welcome{user?.username ? `, ${user.username}` : ''}.</h1>
         <p>Your crop checks and next steps are ready whenever you are.</p>
-        <button className="button account-submit continue-button" onClick={() => navigate('/how-it-works')}>Continue to CropGuard <ArrowRight size={17} /></button>
+        <button className="button account-submit continue-button" onClick={() => navigate('/how-it-works')}>Continue to CropGuard AI <ArrowRight size={17} /></button>
       </section>
       <span className="welcome-footer">A clearer first look at plant health.</span>
     </main>;
@@ -254,7 +254,7 @@ export default function App() {
 
   return <main>
     <header className="topbar wrap" id="top">
-      <a className="brand" href="/how-it-works" onClick={(event) => { event.preventDefault(); navigate('/how-it-works'); }}><span className="brand-mark"><Sprout size={20} /></span><b>cropguard<span>.ai</span></b></a>
+      <a className="brand" href="/how-it-works" onClick={(event) => { event.preventDefault(); navigate('/how-it-works'); }}><span className="brand-mark"><Sprout size={20} /></span><b>CropGuard AI</b></a>
       <nav className={menu ? 'nav nav-open' : 'nav'}>
         <a className={activeNav === 'landing' ? 'active' : ''} aria-current={activeNav === 'landing' ? 'page' : undefined} href="/how-it-works" onClick={(event) => { event.preventDefault(); navigate('/how-it-works'); }}>How it works</a><a className={activeNav === 'check' ? 'active' : ''} aria-current={activeNav === 'check' ? 'page' : undefined} href="/check#diagnose" onClick={(event) => { event.preventDefault(); navigate('/check#diagnose'); }}>Check a leaf</a><a className={activeNav === 'crops' ? 'active' : ''} aria-current={activeNav === 'crops' ? 'page' : undefined} href="/crops" onClick={(event) => { event.preventDefault(); navigate('/crops'); }}>Crops</a><a className={activeNav === 'about' ? 'active' : ''} aria-current={activeNav === 'about' ? 'page' : undefined} href="/about" onClick={(event) => { event.preventDefault(); navigate('/about'); }}>About</a><a className={activeNav === 'privacy' ? 'active' : ''} aria-current={activeNav === 'privacy' ? 'page' : undefined} href="/privacy" onClick={(event) => { event.preventDefault(); navigate('/privacy'); }}>Privacy Policy</a>
       </nav>
@@ -287,6 +287,6 @@ export default function App() {
     {screen === 'crops' && <section className="crops" id="crops"><div className="wrap crop-inner"><div><div className="eyebrow"><i /> In the field</div><h2>Focused on crops<br />that <em>matter.</em></h2></div><div className="crop-list">{crops.map((cropName, index) => <div className="crop-row" key={cropName}><span>0{index + 1}</span><b>{cropName}</b><small><i /> Supported crop</small><ArrowRight size={16} /></div>)}</div></div></section>}
     {screen === 'about' && <section className="closing wrap" id="about"><span className="closing-icon"><Sprout /></span><div><div className="eyebrow"><i /> A helpful place to begin</div><h2>Better questions<br />start with <em>a closer look.</em></h2><button className="text-link" onClick={() => navigate('/check')}>Check a leaf <ArrowRight size={16} /></button></div><p>CropGuard AI is an early guide, designed to help you notice possible issues sooner. It does not replace a diagnosis from an agricultural professional.</p></section>}
     {screen === 'privacy' && <section className="privacy-policy wrap"><div className="eyebrow"><i /> Your information</div><h1>Privacy Policy</h1><p className="policy-updated">Last updated November 20, 2026</p><p>CropGuard AI helps you review crop leaf photos. This page explains what information the app handles and where it is stored.</p><h2>Information the app uses</h2><p>When you create an account, you provide a username and email address. When you sign in, the app stores authentication tokens in your browser so you can use account features.</p><p>If you run a crop check, the leaf photo is sent to the CropGuard API to generate a prediction. The photo is not added to your saved history. The history stores the prediction label, confidence score, and date in your browser, associated with your username.</p><h2>How information is used</h2><p>Account information is used to sign you in. Photos are processed to return a crop prediction. Saved check details are used to show your recent results on the Check a leaf page.</p><h2>Storage and your choices</h2><p>Authentication tokens and check history are stored in this browser. History does not automatically sync to your other devices. Signing out removes the authentication tokens from this browser but leaves its saved history in place. Clearing this site’s browser storage removes locally saved tokens and history.</p><h2>Service providers</h2><p>Crop photos and account requests are sent to the CropGuard API hosted on Render to provide the app’s features. Do not upload images containing information you do not want processed for a crop check.</p><h2>Contact</h2><p>For questions or privacy requests, contact the CropGuard AI operator using the support contact provided with the service.</p></section>}
-    <footer className="footer wrap"><a className="brand" href="/how-it-works" onClick={(event) => { event.preventDefault(); navigate('/how-it-works'); }}><span className="brand-mark"><Sprout size={17} /></span><b>cropguard<span>.ai</span></b></a><span>Thoughtful tools for healthier crops.</span><span>© {new Date().getFullYear()} CropGuard AI</span></footer>
+    <footer className="footer wrap"><a className="brand" href="/how-it-works" onClick={(event) => { event.preventDefault(); navigate('/how-it-works'); }}><span className="brand-mark"><Sprout size={17} /></span><b>CropGuard AI</b></a><span>Thoughtful tools for healthier crops.</span><span>© {new Date().getFullYear()} CropGuard AI</span></footer>
   </main>;
 }
