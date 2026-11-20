@@ -14,6 +14,13 @@ const routeName = (path) => {
   if (path === '/about') return 'about';
   return 'landing';
 };
+const navName = (path) => {
+  const [route, hash] = path.split('#');
+  if (route === '/check') return hash === 'history' ? 'history' : 'check';
+  if (route === '/crops') return 'crops';
+  if (route === '/about') return 'about';
+  return 'landing';
+};
 
 async function call(path, options = {}) {
   const response = await fetch(API + path, options);
@@ -33,6 +40,7 @@ function historyStorageKey(username) {
 export default function App() {
   const input = useRef(null);
   const [screen, setScreen] = useState(() => routeName(window.location.pathname));
+  const [activeNav, setActiveNav] = useState(() => navName(window.location.pathname + window.location.hash));
   const [token, setToken] = useState(() => localStorage.getItem('cropguard.access') || '');
   const [user, setUser] = useState(null);
   const [mode, setMode] = useState('login');
@@ -50,6 +58,7 @@ export default function App() {
   function navigate(path) {
     window.history.pushState({}, '', path);
     setScreen(routeName(path.split('#')[0]));
+    setActiveNav(navName(path));
     setMenu(false);
     setError('');
     const anchor = path.split('#')[1];
@@ -60,7 +69,10 @@ export default function App() {
   }
 
   useEffect(() => {
-    const onPopState = () => setScreen(routeName(window.location.pathname));
+    const onPopState = () => {
+      setScreen(routeName(window.location.pathname));
+      setActiveNav(navName(window.location.pathname + window.location.hash));
+    };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
@@ -232,7 +244,7 @@ export default function App() {
         <span className="account-kicker"><i /> YOUR GROWING JOURNEY STARTS HERE</span>
         <h1>Welcome{user?.username ? `, ${user.username}` : ''}.</h1>
         <p>Your crop checks and next steps are ready whenever you are.</p>
-        <button className="button account-submit continue-button" onClick={() => navigate('/check')}>Continue to CropGuard <ArrowRight size={17} /></button>
+        <button className="button account-submit continue-button" onClick={() => navigate('/how-it-works')}>Continue to CropGuard <ArrowRight size={17} /></button>
       </section>
       <span className="welcome-footer">A clearer first look at plant health.</span>
     </main>;
@@ -242,7 +254,7 @@ export default function App() {
     <header className="topbar wrap" id="top">
       <a className="brand" href="/how-it-works" onClick={(event) => { event.preventDefault(); navigate('/how-it-works'); }}><span className="brand-mark"><Sprout size={20} /></span><b>cropguard<span>.ai</span></b></a>
       <nav className={menu ? 'nav nav-open' : 'nav'}>
-        <a href="/how-it-works" onClick={(event) => { event.preventDefault(); navigate('/how-it-works'); }}>How it works</a><a href="/check#diagnose" onClick={(event) => { event.preventDefault(); navigate('/check#diagnose'); }}>Check a leaf</a><a href="/check#history" onClick={(event) => { event.preventDefault(); navigate('/check#history'); }}>History</a><a href="/crops" onClick={(event) => { event.preventDefault(); navigate('/crops'); }}>Crops</a><a href="/about" onClick={(event) => { event.preventDefault(); navigate('/about'); }}>About</a>
+        <a className={activeNav === 'landing' ? 'active' : ''} aria-current={activeNav === 'landing' ? 'page' : undefined} href="/how-it-works" onClick={(event) => { event.preventDefault(); navigate('/how-it-works'); }}>How it works</a><a className={activeNav === 'check' ? 'active' : ''} aria-current={activeNav === 'check' ? 'page' : undefined} href="/check#diagnose" onClick={(event) => { event.preventDefault(); navigate('/check#diagnose'); }}>Check a leaf</a><a className={activeNav === 'history' ? 'active' : ''} aria-current={activeNav === 'history' ? 'page' : undefined} href="/check#history" onClick={(event) => { event.preventDefault(); navigate('/check#history'); }}>History</a><a className={activeNav === 'crops' ? 'active' : ''} aria-current={activeNav === 'crops' ? 'page' : undefined} href="/crops" onClick={(event) => { event.preventDefault(); navigate('/crops'); }}>Crops</a><a className={activeNav === 'about' ? 'active' : ''} aria-current={activeNav === 'about' ? 'page' : undefined} href="/about" onClick={(event) => { event.preventDefault(); navigate('/about'); }}>About</a>
       </nav>
       <div className="top-actions">
         {user ? <><span className="signed-name">Hi, {user.username}</span><button className="button signout-button" onClick={signout}><LogOut size={15} /> Sign out</button></> : <button className="button outline" onClick={() => navigate('/')}>Sign in <ArrowRight size={15} /></button>}
