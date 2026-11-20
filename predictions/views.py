@@ -9,6 +9,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 
 from .serializers import PredictionSerializer
 from .ml_model import predict_disease
+from .advice import advice_for
 
 
 class PredictView(APIView):
@@ -23,6 +24,7 @@ class PredictView(APIView):
 
             try:
                 result = predict_disease(image)
+                result["advice"] = advice_for(result["disease"])
                 return Response({
                     "success": True,
                     "prediction": result
