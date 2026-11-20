@@ -97,3 +97,13 @@
 h1{text-transform:uppercase;letter-spacing:-.045em!important}.nav a{font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.055em}.lede{font-size:17px}.account-story>p,.account-card>p,.welcome-center>p,.intro>p,.how-title>p,.closing>p{font-size:16px}.button{font-size:15px}.account-card form>label,.switch,.back-link,.hint{font-size:13px!important}.history-head p,.history-empty p,.history-card-content span,.steps p,.crop-row small{font-size:13px}.history-card-content b,.history-empty b,.steps h3{font-size:15px}.eyebrow,.account-kicker{font-size:11px}.proof{font-size:13px}.footer{font-size:12px}
 .hero h1,.account-story h1,.welcome-center h1{font-size:clamp(44px,6vw,72px);letter-spacing:-.045em!important}
 @media(max-width:640px){.nav a{font-size:14px}.hero h1,.account-story h1,.welcome-center h1{font-size:clamp(37px,10vw,54px)}.lede{font-size:16px}.account-story>p,.account-card>p,.welcome-center>p,.intro>p,.how-title>p,.closing>p{font-size:15px}.steps p,.crop-row small{font-size:12px}}
+button:not(:disabled),a,select,[role="button"]{cursor:pointer}
+button,a,.history-card,.crop-row{transition:transform .18s ease,color .18s ease,background-color .18s ease,border-color .18s ease,box-shadow .18s ease}
+button:not(:disabled):hover,a:hover{transform:scale(1.04);color:var(--green)}
+.button:not(:disabled):hover{transform:scale(1.04) translateY(-1px);color:inherit}
+.dark:not(:disabled):hover,.account-submit:not(:disabled):hover{color:#fff;filter:brightness(1.12)}
+.continue-button:not(:disabled):hover{color:#102015}
+.nav a:hover,.text-link:hover,.back-link:hover,.switch button:hover{color:var(--green)}
+.history-card:hover,.crop-row:hover{transform:scale(1.02);color:var(--green);border-color:#b9c8b5;box-shadow:0 8px 20px #19231b0d}
+button:disabled{cursor:not-allowed}
+@media(prefers-reduced-motion:reduce){button,a,.history-card,.crop-row{transition:none}}
