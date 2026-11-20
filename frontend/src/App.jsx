@@ -269,7 +269,7 @@ export default function App() {
     return <main className="welcome-page">
       <div className="welcome-top"><a className="brand" href="/" onClick={(event) => { event.preventDefault(); navigate('/'); }}><img className="brand-logo" src="/cropguard-logo.svg" alt="" /><b>CropGuard AI</b></a><div className="welcome-actions"><ThemeToggle theme={theme} onToggle={toggleTheme} />{token && <button className="button signout-button" onClick={signout}><LogOut size={15} /> Sign out</button>}</div></div>
       <section className="welcome-center" aria-live="polite">
-        <div className="welcome-animation"><span className="welcome-ring ring-a"/><span className="welcome-ring ring-b"/><span className="welcome-sprout"><Sprout size={50} /></span><span className="welcome-check"><Check size={18} /></span></div>
+        <div className="welcome-animation"><span className="welcome-ring ring-a"/><span className="welcome-ring ring-b"/><img className="welcome-logo" src="/cropguard-logo.svg" alt="CropGuard AI logo"/><span className="welcome-check"><Check size={18} /></span></div>
         <span className="account-kicker"><i /> YOUR GROWING JOURNEY STARTS HERE</span>
         <h1>Welcome{user?.username ? `, ${user.username}` : ''}.</h1>
         <p>Your crop checks and next steps are ready whenever you are.</p>
