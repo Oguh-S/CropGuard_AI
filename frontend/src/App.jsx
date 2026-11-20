@@ -190,7 +190,7 @@ export default function App() {
       return;
     }
     if (!file) {
-      setError('Add a clear photo of one crop leaf first.');
+      setError('Put a valid image');
       return;
     }
     setBusy(true);

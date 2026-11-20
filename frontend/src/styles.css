@@ -133,6 +133,18 @@ html[data-theme="dark"] .theme-toggle:hover{background:#2a3d2e;color:#f2d29c}
 html[data-theme="dark"] .lede,html[data-theme="dark"] .account-story>p,html[data-theme="dark"] .account-card>p,html[data-theme="dark"] .welcome-center>p,html[data-theme="dark"] .intro>p,html[data-theme="dark"] .how-title>p,html[data-theme="dark"] .steps p,html[data-theme="dark"] .history-head p,html[data-theme="dark"] .history-empty p,html[data-theme="dark"] .history-card-content span,html[data-theme="dark"] .privacy,html[data-theme="dark"] .closing>p,html[data-theme="dark"] .privacy-policy p,html[data-theme="dark"] .account-story>small,html[data-theme="dark"] .footer{color:#b7c2b6}
 html[data-theme="dark"] .history-empty>span{background:#352d26;color:#d5ad8d}
 html[data-theme="dark"] .privacy-policy .policy-updated{color:#9ca99b}
+html[data-theme="dark"] .result{background:#1d2a20;border-color:#435545;color:#edf4eb}
+html[data-theme="dark"] .result>span{background:#2b402e;color:#a9d09f}
+html[data-theme="dark"] .result>div>b{color:#f0f5ee}
+html[data-theme="dark"] .result small{color:#b4c3b2}
+html[data-theme="dark"] .result p{color:#c2cec0}
+html[data-theme="dark"] .result .crop-warning{color:#e7bd91}
+html[data-theme="dark"] .advice-card{background:#1d2a20;border-color:#435545;color:#e9efe8}
+html[data-theme="dark"] .advice-heading>span{background:#2b402e;color:#a9d09f}
+html[data-theme="dark"] .advice-heading small,html[data-theme="dark"] .advice-source{color:#a9d09f}
+html[data-theme="dark"] .advice-heading h4{color:#f0f5ee}
+html[data-theme="dark"] .advice-card>p,html[data-theme="dark"] .advice-card li{color:#d5dfd3}
+html[data-theme="dark"] .advice-note{color:#b7c2b6;border-color:#435545}
 html[data-theme="light"] .welcome-page{background:#f7f8f4;color:#19231b}
 html[data-theme="light"] .welcome-page:before{border-color:#19231b12;box-shadow:0 0 0 70px #19231b08,0 0 0 140px #19231b05}
 html[data-theme="light"] .welcome-page .brand{color:#19231b}

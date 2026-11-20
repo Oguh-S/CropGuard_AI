@@ -31,10 +31,31 @@ def load_model():
 import numpy as np
 from PIL import Image
 
+INVALID_IMAGE_MESSAGE = "Put a valid image"
+
 def predict_disease(image_file):
     model, classes = load_model()
 
-    image = Image.open(image_file).convert("RGB")
+    try:
+        image = Image.open(image_file).convert("RGB")
+    except Exception as exc:
+        raise ValueError(INVALID_IMAGE_MESSAGE) from exc
+
+    # Reject tiny or visibly out-of-focus photos before asking the classifier.
+    if min(image.size) < 128:
+        raise ValueError(INVALID_IMAGE_MESSAGE)
+
+    gray = np.asarray(image.convert("L"), dtype=np.float32)
+    laplacian = (
+        -4 * gray
+        + np.roll(gray, 1, axis=0)
+        + np.roll(gray, -1, axis=0)
+        + np.roll(gray, 1, axis=1)
+        + np.roll(gray, -1, axis=1)
+    )
+    if float(np.var(laplacian)) < 12:
+        raise ValueError(INVALID_IMAGE_MESSAGE)
+
     image = image.resize((224, 224))
 
     image_array = np.array(image, dtype=np.float32)
@@ -44,6 +65,11 @@ def predict_disease(image_file):
 
     predicted_index = int(np.argmax(predictions[0]))
     confidence = float(predictions[0][predicted_index])
+
+    # The model only knows crop leaf conditions; low confidence is treated as
+    # an unsuitable/non-leaf image instead of presenting a misleading match.
+    if confidence < 0.5:
+        raise ValueError(INVALID_IMAGE_MESSAGE)
 
     return {
         "disease": classes[predicted_index],

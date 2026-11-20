@@ -30,6 +30,9 @@ class PredictView(APIView):
                     "prediction": result
                 })
 
+            except ValueError as e:
+                return Response({"detail": str(e)}, status=400)
+
             except Exception as e:
                 return Response({
                     "success": False,
