@@ -1,0 +1,14 @@
+.git
+.env
+.env.*
+!.env.example
+**/node_modules
+**/dist
+**/__pycache__
+**/*.py[cod]
+.venv
+venv
+db.sqlite3
+staticfiles
+cropguard_auth_backup.json
+*_auth_backup.*

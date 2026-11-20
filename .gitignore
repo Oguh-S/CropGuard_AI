@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+*.sqlite3
+cropguard_auth_backup.json
+*_auth_backup.*
+.vercel/
+node_modules/
+dist/
+staticfiles/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.log
+.DS_Store
+Thumbs.db

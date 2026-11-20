@@ -1,0 +1,26 @@
+{
+  "class_names": [
+    "Cashew___anthracnose",
+    "Cashew___gumosis",
+    "Cashew___healthy",
+    "Cashew___leaf miner",
+    "Cashew___red rust",
+    "Cassava___bacterial blight",
+    "Cassava___brown spot",
+    "Cassava___green mite",
+    "Cassava___healthy",
+    "Cassava___mosaic",
+    "Maize___fall armyworm",
+    "Maize___grasshoper",
+    "Maize___healthy",
+    "Maize___leaf beetle",
+    "Maize___leaf blight",
+    "Maize___leaf spot",
+    "Maize___streak virus",
+    "Tomato___healthy",
+    "Tomato___leaf blight",
+    "Tomato___leaf curl",
+    "Tomato___septoria leaf spot",
+    "Tomato___verticulium wilt"
+  ]
+}
