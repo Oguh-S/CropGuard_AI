@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-labelledby="title">
+  <title id="title">CropGuard AI sprout and CG emblem</title>
+  <circle cx="200" cy="200" r="190" fill="#5A3A22"/>
+  <circle cx="200" cy="200" r="174" fill="none" stroke="#8A5D38" stroke-width="3"/>
+  <path d="M200 150v-38" fill="none" stroke="#7CC05A" stroke-width="7" stroke-linecap="round"/>
+  <path d="M200 128c-42 2-70-24-74-62 40 0 72 24 74 62Z" fill="#7CC05A"/>
+  <path d="M200 112c42 2 70-24 74-62-40 0-72 24-74 62Z" fill="#4E9A3A"/>
+  <text x="200" y="266" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="116" letter-spacing="2"><tspan fill="#F5EFE2">C</tspan><tspan fill="#9ED77A">G</tspan></text>
+  <path d="M92 304q108-20 216 0m-200 20q92-18 184 0m-162 18q70-14 140 0" fill="none" stroke-linecap="round" stroke-width="5" stroke="#8A5D38"/>
+  <path d="M108 324q92-18 184 0" fill="none" stroke="#7CC05A" stroke-width="5" stroke-linecap="round"/>
+</svg>
