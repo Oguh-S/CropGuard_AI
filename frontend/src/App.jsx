@@ -1,26 +1,262 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Check, ChevronDown, Leaf, LoaderCircle, LogOut, Menu, ShieldCheck, Sprout, UploadCloud, X } from 'lucide-react';
-const API=(import.meta.env.VITE_API_BASE_URL||'http://127.0.0.1:8000').replace(/\/$/,'')+'/api';
-const crops=['Cashew','Cassava','Maize','Tomato'];
-async function call(path,options={}){const r=await fetch(API+path,options);const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.detail||d.error||Object.values(d).flat().join(' ')||'Something went wrong.');return d;}
-function label(s=''){return s.replaceAll('___',' · ').replaceAll('_',' ').replace(/\b\w/g,x=>x.toUpperCase());}
-export default function App(){
- const input=useRef(null),[token,setToken]=useState(()=>localStorage.getItem('cropguard.access')||''),[user,setUser]=useState(null),[auth,setAuth]=useState(''),[mode,setMode]=useState('login'),[form,setForm]=useState({username:'',email:'',password:''}),[file,setFile]=useState(null),[preview,setPreview]=useState(''),[crop,setCrop]=useState(''),[result,setResult]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[menu,setMenu]=useState(false);
- useEffect(()=>{if(token)call('/accounts/profile/',{headers:{Authorization:`Bearer ${token}`}}).then(setUser).catch(()=>{localStorage.removeItem('cropguard.access');setToken('');});else setUser(null);},[token]);
- useEffect(()=>()=>{if(preview)URL.revokeObjectURL(preview);},[preview]);
- function pick(f){if(!f)return;if(!f.type.startsWith('image/')){setError('Choose a JPG, PNG, or other image file.');return;}if(f.size>10*1024*1024){setError('This image is over 10 MB. Choose a smaller photo.');return;}if(preview)URL.revokeObjectURL(preview);setFile(f);setPreview(URL.createObjectURL(f));setResult(null);setError('');setNotice('');}
- async function submitAuth(e){e.preventDefault();setError('');setBusy(true);try{if(mode==='register')await call('/accounts/register/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(form)});const d=await call('/token/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:form.username,password:form.password})});localStorage.setItem('cropguard.access',d.access);if(d.refresh)localStorage.setItem('cropguard.refresh',d.refresh);setToken(d.access);setAuth('');setNotice('You’re signed in and ready to check a leaf.');}catch(x){setError(x.message);}finally{setBusy(false);}}
- async function diagnose(e){e.preventDefault();setError('');if(!token){setMode('login');setAuth('open');setError('Sign in to run a diagnosis.');return;}if(!file){setError('Add a clear photo of one crop leaf first.');return;}setBusy(true);setResult(null);setNotice('');const body=new FormData();body.append('image',file);try{const d=await call('/predictions/predict/',{method:'POST',headers:{Authorization:`Bearer ${token}`},body});setResult(d.prediction);setNotice('Use this as an early guide and confirm with a local agriculture expert.');}catch(x){setError(x.message);}finally{setBusy(false);}}
- function signout(){localStorage.removeItem('cropguard.access');localStorage.removeItem('cropguard.refresh');setToken('');setResult(null);setNotice('You have signed out.');}
- return <main>
-  <header className="topbar wrap"><a className="brand" href="#top"><span className="brand-mark"><Sprout size={20}/></span><b>cropguard<span>.ai</span></b></a><nav className={menu?'nav nav-open':'nav'}><a href="#how" onClick={()=>setMenu(false)}>How it works</a><a href="#crops" onClick={()=>setMenu(false)}>Supported crops</a><a href="#about" onClick={()=>setMenu(false)}>About</a></nav><div className="top-actions">{user?<div className="signed"><span className="avatar">{user.username?.[0]?.toUpperCase()}</span><span className="signed-name">{user.username}</span><button className="icon" title="Sign out" onClick={signout}><LogOut size={16}/></button></div>:<button className="button outline" onClick={()=>{setMode('login');setAuth('open');}}>Sign in <ArrowRight size={15}/></button>}<button className="menu-toggle" onClick={()=>setMenu(!menu)} aria-label="Navigation">{menu?<X/>:<Menu/>}</button></div></header>
-  <section className="hero wrap" id="top"><div><div className="eyebrow"><i/> A clearer first look at plant health</div><h1>Know what’s<br/>growing <em>wrong.</em></h1><p className="lede">A leaf can tell you a lot. Take a photo, get an AI-powered first look, and take your next step with more confidence.</p><a className="button dark" href="#diagnose">Check a leaf <ArrowRight size={17}/></a><div className="proof"><span className="proof-icon">✳</span> Made with farmers in mind <b>·</b> 4 crop families</div></div><div className="hero-art"><div className="sun"/><div className="rings"/><div className="leaf-art"><i/><i/><i/></div><div className="scan-tag"><i/> PLANT SCAN, SIMPLIFIED</div><div className="note"><ShieldCheck size={18}/><span><b>A better first step</b><small>Spot signs, act sooner</small></span><ArrowRight size={15}/></div><div className="caption">01 / 04 <span>Healthy crops start with attention</span></div></div></section>
-  <div className="trust wrap"><span>BUILT FOR THE CROPS YOU GROW</span>{crops.map((c,i)=><b key={c}><i className={'crop-dot dot'+i}/>{c}</b>)}</div>
-  <section className="diagnose" id="diagnose"><div className="wrap diag-grid"><div className="intro"><div className="eyebrow"><i/> Your next step starts here</div><h2>Let’s take a<br/><em>closer look.</em></h2><p>Upload a well-lit photo of one leaf. CropGuard AI will compare it with the signs it has learned to recognize.</p><div className="privacy"><ShieldCheck size={18}/>Your photo is used to create this result and is not saved to your profile.</div></div><form className="upload-card" onSubmit={diagnose}><div className="card-head"><div><small>STEP 01 — ADD A PHOTO</small><h3>Start with a leaf</h3></div><span>01</span></div><div className={'dropzone '+(preview?'has-image':'')} onClick={e=>{if(e.target!==input.current)input.current?.click();}} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();pick(e.dataTransfer.files[0]);}} role="button" tabIndex="0" aria-label="Choose or drop a crop leaf photo" onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();input.current?.click();}}}><input ref={input} hidden type="file" accept="image/*" onClick={e=>e.stopPropagation()} onChange={e=>{pick(e.target.files[0]);e.target.value='';}}/>{preview?<><img src={preview} alt="Selected crop leaf"/><span className="replace"><UploadCloud size={16}/>Choose another image</span></>:<><span className="upload-icon"><UploadCloud size={22}/></span><b>Drop your leaf photo here</b><span>or <u>browse files</u> on your device</span><small>JPG, PNG · Up to 10 MB</small></>}</div><div className="crop-select"><span><b>CROP TYPE</b><small>Compare this with the model’s result</small></span><label><select value={crop} onChange={e=>setCrop(e.target.value)}><option value="">No selection</option>{crops.map(c=><option key={c}>{c}</option>)}</select><ChevronDown size={15}/></label></div><button className="button dark submit" disabled={busy}>{busy?<><LoaderCircle className="spin" size={17}/> Looking at your leaf…</>:<>Get my first look <ArrowRight size={17}/></>}</button>{(error||notice)&&<div className={'feedback '+(error?'bad':'')} role="status">{error||notice}</div>}{result&&<><div className="result"><span><Leaf size={19}/></span><div><small>POTENTIAL MATCH</small><b>{label(result.disease)}</b><p>{Number(result.confidence).toFixed(1)}% model confidence</p>{crop&&result.disease.split('___')[0].toLowerCase()!==crop.toLowerCase()&&<p className="crop-warning">You selected {crop}; check that the photo shows this crop.</p>}</div><Check size={17}/></div><section className="advice-card" aria-labelledby="advice-title"><div className="advice-heading"><span><Sprout size={18}/></span><div><small>WHAT TO DO NEXT</small><h4 id="advice-title">Suggested next steps</h4></div></div><p>{result.advice?.summary||'Ask a local agricultural extension officer to confirm this result.'}</p><ul>{(result.advice?.actions||['Inspect several plants for the same signs.','Contact a local agricultural extension officer for crop-specific advice.']).map((action,i)=><li key={i}>{action}</li>)}</ul>{result.advice?.source&&<a className="advice-source" href={result.advice.source.url} target="_blank" rel="noreferrer">Source: {result.advice.source.name} <ArrowRight size={13}/></a>}<small className="advice-note">A photo match is not a confirmed diagnosis. Follow local guidance and product labels before using any pesticide.</small></section></>}{!token&&<p className="hint">You’ll need to <button type="button" onClick={()=>{setMode('login');setAuth('open');}}>sign in</button> before your first analysis.</p>}</form></div></section>
-  <section className="how wrap" id="how"><div className="eyebrow"><i/> Simple by design</div><div className="how-title"><h2>A little insight.<br/><em>A lot more clarity.</em></h2><p>Keep it simple: one photo, one starting point, and a clearer idea of what to do next.</p></div><div className="steps"><article><small>01</small><span className="step-icon">↗</span><h3>Share a photo</h3><p>Choose a clear picture of the affected leaf in natural light.</p></article><article><small>02</small><span className="step-icon gold">✳</span><h3>Get a first look</h3><p>Our image model checks for patterns across supported crop conditions.</p></article><article><small>03</small><span className="step-icon blue">✓</span><h3>Plan your next step</h3><p>Use the result to start a conversation with someone who knows your crop.</p></article></div></section>
-  <section className="crops" id="crops"><div className="wrap crop-inner"><div><div className="eyebrow"><i/> In the field</div><h2>Focused on crops<br/>that <em>matter.</em></h2></div><div className="crop-list">{crops.map((c,i)=><div className="crop-row" key={c}><span>0{i+1}</span><b>{c}</b><small><i/> Supported crop</small><ArrowRight size={16}/></div>)}</div></div></section>
-  <section className="closing wrap" id="about"><span className="closing-icon"><Sprout/></span><div><div className="eyebrow"><i/> A helpful place to begin</div><h2>Better questions<br/>start with <em>a closer look.</em></h2><a href="#diagnose">Check a leaf <ArrowRight size={16}/></a></div><p>CropGuard AI is an early guide, designed to help you notice possible issues sooner. It does not replace a diagnosis from an agricultural professional.</p></section>
-  <footer className="footer wrap"><a className="brand" href="#top"><span className="brand-mark"><Sprout size={17}/></span><b>cropguard<span>.ai</span></b></a><span>Thoughtful tools for healthier crops.</span><span>© {new Date().getFullYear()} CropGuard AI</span></footer>
-  {auth&&<div className="backdrop" onMouseDown={e=>e.target===e.currentTarget&&setAuth('')}><section className="modal" role="dialog" aria-modal="true"><button className="close" onClick={()=>setAuth('')} aria-label="Close"><X/></button><span className="brand-mark"><Sprout size={20}/></span><div className="eyebrow"><i/> YOUR CROPGUARD ACCOUNT</div><h2>{mode==='login'?'Welcome back.':'Let’s get started.'}</h2><p>{mode==='login'?'Sign in to take a closer look at your crop.':'Create an account to get started.'}</p><form onSubmit={submitAuth}><label>Username<input autoComplete="username" value={form.username} onChange={e=>setForm({...form,username:e.target.value})} required/></label>{mode==='register'&&<label>Email<input type="email" autoComplete="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} required/></label>}<label>Password<input type="password" minLength="8" autoComplete={mode==='login'?'current-password':'new-password'} value={form.password} onChange={e=>setForm({...form,password:e.target.value})} required/></label><button className="button dark submit" disabled={busy}>{busy?'Please wait…':mode==='login'?'Sign in':'Create account'}</button>{error&&<div className="feedback bad">{error}</div>}</form><p className="switch">{mode==='login'?'New to CropGuard?':'Already have an account?'} <button onClick={()=>{setError('');setMode(mode==='login'?'register':'login');}}>{mode==='login'?'Create an account':'Sign in'}</button></p></section></div>}
- </main>;
+import {
+  ArrowRight, CalendarDays, Check, ChevronDown, CircleUserRound, Leaf,
+  LoaderCircle, LogOut, Menu, ShieldCheck, Sprout, UploadCloud, X,
+} from 'lucide-react';
+
+const API = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '') + '/api';
+const crops = ['Cashew', 'Cassava', 'Maize', 'Tomato'];
+const routeName = (path) => path === '/login' ? 'login' : path === '/welcome' ? 'welcome' : 'landing';
+
+async function call(path, options = {}) {
+  const response = await fetch(API + path, options);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw Error(data.detail || data.error || Object.values(data).flat().join(' ') || 'Something went wrong.');
+  return data;
+}
+
+function label(value = '') {
+  return value.replaceAll('___', ' · ').replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function historyStorageKey(username) {
+  return username ? `cropguard.history.${username.toLowerCase()}` : '';
+}
+
+export default function App() {
+  const input = useRef(null);
+  const [screen, setScreen] = useState(() => routeName(window.location.pathname));
+  const [token, setToken] = useState(() => localStorage.getItem('cropguard.access') || '');
+  const [user, setUser] = useState(null);
+  const [mode, setMode] = useState('login');
+  const [form, setForm] = useState({ username: '', email: '', password: '' });
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState('');
+  const [crop, setCrop] = useState('');
+  const [result, setResult] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [menu, setMenu] = useState(false);
+
+  function navigate(path) {
+    window.history.pushState({}, '', path);
+    setScreen(routeName(path));
+    setMenu(false);
+    setError('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  useEffect(() => {
+    const onPopState = () => setScreen(routeName(window.location.pathname));
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  useEffect(() => {
+    if (!token) {
+      setUser(null);
+      return;
+    }
+    call('/accounts/profile/', { headers: { Authorization: `Bearer ${token}` } })
+      .then((profile) => setUser(profile))
+      .catch(() => {
+        localStorage.removeItem('cropguard.access');
+        localStorage.removeItem('cropguard.refresh');
+        setToken('');
+      });
+  }, [token]);
+
+  useEffect(() => {
+    if (!user?.username) {
+      setHistory([]);
+      return;
+    }
+    try {
+      setHistory(JSON.parse(localStorage.getItem(historyStorageKey(user.username)) || '[]'));
+    } catch {
+      setHistory([]);
+    }
+  }, [user?.username]);
+
+  useEffect(() => () => {
+    if (preview) URL.revokeObjectURL(preview);
+  }, [preview]);
+
+  function pick(nextFile) {
+    if (!nextFile) return;
+    if (!nextFile.type.startsWith('image/')) {
+      setError('Choose a JPG, PNG, or other image file.');
+      return;
+    }
+    if (nextFile.size > 10 * 1024 * 1024) {
+      setError('This image is over 10 MB. Choose a smaller photo.');
+      return;
+    }
+    if (preview) URL.revokeObjectURL(preview);
+    setFile(nextFile);
+    setPreview(URL.createObjectURL(nextFile));
+    setResult(null);
+    setError('');
+    setNotice('');
+  }
+
+  async function submitAuth(event) {
+    event.preventDefault();
+    setError('');
+    setBusy(true);
+    try {
+      if (mode === 'register') {
+        await call('/accounts/register/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form),
+        });
+      }
+      const data = await call('/token/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: form.username, password: form.password }),
+      });
+      localStorage.setItem('cropguard.access', data.access);
+      if (data.refresh) localStorage.setItem('cropguard.refresh', data.refresh);
+      setToken(data.access);
+      navigate('/welcome');
+    } catch (authError) {
+      setError(authError.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function diagnose(event) {
+    event.preventDefault();
+    setError('');
+    if (!token) {
+      navigate('/login');
+      setNotice('Sign in to run a diagnosis.');
+      return;
+    }
+    if (!file) {
+      setError('Add a clear photo of one crop leaf first.');
+      return;
+    }
+    setBusy(true);
+    setResult(null);
+    setNotice('');
+    const body = new FormData();
+    body.append('image', file);
+    try {
+      const data = await call('/predictions/predict/', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body,
+      });
+      const prediction = data.prediction;
+      setResult(prediction);
+      setNotice('Use this as an early guide and confirm with a local agriculture expert.');
+      const entry = {
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        disease: prediction.disease,
+        confidence: prediction.confidence,
+        createdAt: new Date().toISOString(),
+      };
+      const nextHistory = [entry, ...history].slice(0, 12);
+      setHistory(nextHistory);
+      if (user?.username) localStorage.setItem(historyStorageKey(user.username), JSON.stringify(nextHistory));
+    } catch (diagnosisError) {
+      setError(diagnosisError.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function signout() {
+    localStorage.removeItem('cropguard.access');
+    localStorage.removeItem('cropguard.refresh');
+    setToken('');
+    setUser(null);
+    setResult(null);
+    setFile(null);
+    setPreview('');
+    setNotice('You have signed out.');
+    navigate('/');
+  }
+
+  if (screen === 'login') {
+    return <main className="account-page">
+      <a className="brand account-brand" href="/" onClick={(event) => { event.preventDefault(); navigate('/'); }}><span className="brand-mark"><Sprout size={20} /></span><b>cropguard<span>.ai</span></b></a>
+      <div className="account-layout">
+        <section className="account-story">
+          <span className="account-kicker"><i /> GROW WITH MORE CONFIDENCE</span>
+          <h1>A little care<br />goes a <em>long way.</em></h1>
+          <p>Sign in to keep your crop checks together and find a clearer next step when a leaf looks different.</p>
+          <div className="account-leaf"><div className="account-orbit orbit-one"/><div className="account-orbit orbit-two"/><Sprout size={72} strokeWidth={1.1}/></div>
+          <small>Thoughtful tools for healthier crops.</small>
+        </section>
+        <section className="account-card">
+          <div className="eyebrow"><i /> YOUR CROPGUARD ACCOUNT</div>
+          <h2>{mode === 'login' ? 'Welcome back.' : 'Let’s get started.'}</h2>
+          <p>{mode === 'login' ? 'Sign in to take a closer look at your crop.' : 'Create an account to save your crop checks.'}</p>
+          <form onSubmit={submitAuth}>
+            <label>Username<input autoComplete="username" value={form.username} onChange={(event) => setForm({ ...form, username: event.target.value })} required /></label>
+            {mode === 'register' && <label>Email<input type="email" autoComplete="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} required /></label>}
+            <label>Password<input type="password" minLength="8" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} required /></label>
+            <button className="button account-submit" disabled={busy}>{busy ? <><LoaderCircle className="spin" size={17} /> Please wait…</> : <>{mode === 'login' ? 'Sign in' : 'Create account'} <ArrowRight size={17} /></>}</button>
+            {error && <div className="feedback bad" role="alert">{error}</div>}
+          </form>
+          <p className="switch">{mode === 'login' ? 'New to CropGuard?' : 'Already have an account?'} <button onClick={() => { setError(''); setMode(mode === 'login' ? 'register' : 'login'); }}>{mode === 'login' ? 'Create an account' : 'Sign in'}</button></p>
+          <button className="back-link" onClick={() => navigate('/')}><ArrowRight size={14} className="back-arrow" /> Back to CropGuard</button>
+        </section>
+      </div>
+    </main>;
+  }
+
+  if (screen === 'welcome') {
+    return <main className="welcome-page">
+      <div className="welcome-top"><a className="brand" href="/" onClick={(event) => { event.preventDefault(); navigate('/'); }}><span className="brand-mark"><Sprout size={20} /></span><b>cropguard<span>.ai</span></b></a>{token && <button className="button signout-button" onClick={signout}><LogOut size={15} /> Sign out</button>}</div>
+      <section className="welcome-center" aria-live="polite">
+        <div className="welcome-animation"><span className="welcome-ring ring-a"/><span className="welcome-ring ring-b"/><span className="welcome-sprout"><Sprout size={50} /></span><span className="welcome-check"><Check size={18} /></span></div>
+        <span className="account-kicker"><i /> YOUR GROWING JOURNEY STARTS HERE</span>
+        <h1>Welcome{user?.username ? `, ${user.username}` : ''}.</h1>
+        <p>Your crop checks and next steps are ready whenever you are.</p>
+        <button className="button account-submit continue-button" onClick={() => navigate('/')}>Continue to CropGuard <ArrowRight size={17} /></button>
+      </section>
+      <span className="welcome-footer">A clearer first look at plant health.</span>
+    </main>;
+  }
+
+  return <main>
+    <header className="topbar wrap" id="top">
+      <a className="brand" href="#top"><span className="brand-mark"><Sprout size={20} /></span><b>cropguard<span>.ai</span></b></a>
+      <nav className={menu ? 'nav nav-open' : 'nav'}>
+        <a href="#diagnose" onClick={() => setMenu(false)}>Check a leaf</a><a href="#history" onClick={() => setMenu(false)}>History</a><a href="#how" onClick={() => setMenu(false)}>How it works</a><a href="#crops" onClick={() => setMenu(false)}>Crops</a>
+      </nav>
+      <div className="top-actions">
+        {user ? <><span className="signed-name">Hi, {user.username}</span><button className="button signout-button" onClick={signout}><LogOut size={15} /> Sign out</button></> : <button className="button outline" onClick={() => { setMode('login'); navigate('/login'); }}>Sign in <ArrowRight size={15} /></button>}
+        <button className="menu-toggle" onClick={() => setMenu(!menu)} aria-label="Navigation">{menu ? <X /> : <Menu />}</button>
+      </div>
+    </header>
+
+    <section className="hero wrap"><div><div className="eyebrow"><i /> A clearer first look at plant health</div><h1>Know what’s<br />growing <em>wrong.</em></h1><p className="lede">A leaf can tell you a lot. Take a photo, get an AI-powered first look, and take your next step with more confidence.</p><a className="button dark" href="#diagnose">Check a leaf <ArrowRight size={17} /></a><div className="proof"><span className="proof-icon">✳</span> Made with farmers in mind <b>·</b> 4 crop families</div></div><div className="hero-art"><div className="sun" /><div className="rings" /><div className="leaf-art"><i /><i /><i /></div><div className="scan-tag"><i /> PLANT SCAN, SIMPLIFIED</div><div className="note"><ShieldCheck size={18} /><span><b>A better first step</b><small>Spot signs, act sooner</small></span><ArrowRight size={15} /></div><div className="caption">01 / 04 <span>Healthy crops start with attention</span></div></div></section>
+    <div className="trust wrap"><span>BUILT FOR THE CROPS YOU GROW</span>{crops.map((cropName, index) => <b key={cropName}><i className={`crop-dot dot${index}`} />{cropName}</b>)}</div>
+
+    <section className="diagnose" id="diagnose"><div className="wrap diag-grid"><div className="intro"><div className="eyebrow"><i /> Your next step starts here</div><h2>Let’s take a<br /><em>closer look.</em></h2><p>Upload a well-lit photo of one leaf. CropGuard AI will compare it with the signs it has learned to recognize.</p><div className="privacy"><ShieldCheck size={18} />Your photo is used to create this result and is not saved to your profile.</div></div>
+      <form className="upload-card" onSubmit={diagnose}><div className="card-head"><div><small>STEP 01 — ADD A PHOTO</small><h3>Start with a leaf</h3></div><span>01</span></div><div className={`dropzone ${preview ? 'has-image' : ''}`} onClick={(event) => { if (event.target !== input.current) input.current?.click(); }} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); pick(event.dataTransfer.files[0]); }} role="button" tabIndex="0" aria-label="Choose or drop a crop leaf photo" onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); input.current?.click(); } }}><input ref={input} hidden type="file" accept="image/*" onClick={(event) => event.stopPropagation()} onChange={(event) => { pick(event.target.files[0]); event.target.value = ''; }} />{preview ? <><img src={preview} alt="Selected crop leaf" /><span className="replace"><UploadCloud size={16} />Choose another image</span></> : <><span className="upload-icon"><UploadCloud size={22} /></span><b>Drop your leaf photo here</b><span>or <u>browse files</u> on your device</span><small>JPG, PNG · Up to 10 MB</small></>}</div>
+      <div className="crop-select"><span><b>CROP TYPE</b><small>Compare this with the model’s result</small></span><label><select value={crop} onChange={(event) => setCrop(event.target.value)}><option value="">No selection</option>{crops.map((cropName) => <option key={cropName}>{cropName}</option>)}</select><ChevronDown size={15} /></label></div>
+      <button className="button dark submit" disabled={busy}>{busy ? <><LoaderCircle className="spin" size={17} /> Looking at your leaf…</> : <>Get my first look <ArrowRight size={17} /></>}</button>
+      {(error || notice) && <div className={`feedback ${error ? 'bad' : ''}`} role="status">{error || notice}</div>}
+      {result && <><div className="result"><span><Leaf size={19} /></span><div><small>POTENTIAL MATCH</small><b>{label(result.disease)}</b><p>{Number(result.confidence).toFixed(1)}% model confidence</p>{crop && result.disease.split('___')[0].toLowerCase() !== crop.toLowerCase() && <p className="crop-warning">You selected {crop}; check that the photo shows this crop.</p>}</div><Check size={17} /></div><section className="advice-card" aria-labelledby="advice-title"><div className="advice-heading"><span><Sprout size={18} /></span><div><small>WHAT TO DO NEXT</small><h4 id="advice-title">Suggested next steps</h4></div></div><p>{result.advice?.summary || 'Ask a local agricultural extension officer to confirm this result.'}</p><ul>{(result.advice?.actions || ['Inspect several plants for the same signs.', 'Contact a local agricultural extension officer for crop-specific advice.']).map((action, index) => <li key={index}>{action}</li>)}</ul>{result.advice?.source && <a className="advice-source" href={result.advice.source.url} target="_blank" rel="noreferrer">Source: {result.advice.source.name} <ArrowRight size={13} /></a>}<small className="advice-note">A photo match is not a confirmed diagnosis. Follow local guidance and product labels before using any pesticide.</small></section></>}
+      {!token && <p className="hint">You’ll need to <button type="button" onClick={() => navigate('/login')}>sign in</button> before your first analysis.</p>}</form></div></section>
+
+    <section className="history-section wrap" id="history"><div className="history-head"><div><div className="eyebrow"><i /> YOUR FIELD NOTES</div><h2>Recent <em>checks.</em></h2><p>Keep an eye on the changes you’ve noticed in your crops.</p></div>{user ? <span className="history-count"><CalendarDays size={15} /> {history.length} saved {history.length === 1 ? 'check' : 'checks'}</span> : <button className="button outline" onClick={() => navigate('/login')}>Sign in to save checks <ArrowRight size={14} /></button>}</div>
+      {user && history.length ? <div className="history-grid">{history.slice(0, 4).map((entry) => <article className="history-card" key={entry.id}><span className="history-icon"><Leaf size={18} /></span><div className="history-card-content"><small>{new Date(entry.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</small><b>{label(entry.disease)}</b><span>{Number(entry.confidence).toFixed(1)}% model confidence</span></div><ArrowRight size={16} /></article>)}</div> : <div className="history-empty"><span><CircleUserRound size={22} /></span><div><b>{user ? 'Your crop checks will appear here.' : 'Your next check starts with a photo.'}</b><p>{user ? 'Run a diagnosis and your latest results will be saved on this device.' : 'Sign in to keep your recent checks together.'}</p></div>{user ? <a href="#diagnose">Check a leaf <ArrowRight size={15} /></a> : <button onClick={() => navigate('/login')}>Sign in <ArrowRight size={15} /></button>}</div>}
+    </section>
+
+    <section className="how wrap" id="how"><div className="eyebrow"><i /> Simple by design</div><div className="how-title"><h2>A little insight.<br /><em>A lot more clarity.</em></h2><p>Keep it simple: one photo, one starting point, and a clearer idea of what to do next.</p></div><div className="steps"><article><small>01</small><span className="step-icon">↗</span><h3>Share a photo</h3><p>Choose a clear picture of the affected leaf in natural light.</p></article><article><small>02</small><span className="step-icon gold">✳</span><h3>Get a first look</h3><p>Our image model checks for patterns across supported crop conditions.</p></article><article><small>03</small><span className="step-icon blue">✓</span><h3>Plan your next step</h3><p>Use the result to start a conversation with someone who knows your crop.</p></article></div></section>
+    <section className="crops" id="crops"><div className="wrap crop-inner"><div><div className="eyebrow"><i /> In the field</div><h2>Focused on crops<br />that <em>matter.</em></h2></div><div className="crop-list">{crops.map((cropName, index) => <div className="crop-row" key={cropName}><span>0{index + 1}</span><b>{cropName}</b><small><i /> Supported crop</small><ArrowRight size={16} /></div>)}</div></div></section>
+    <section className="closing wrap" id="about"><span className="closing-icon"><Sprout /></span><div><div className="eyebrow"><i /> A helpful place to begin</div><h2>Better questions<br />start with <em>a closer look.</em></h2><a href="#diagnose">Check a leaf <ArrowRight size={16} /></a></div><p>CropGuard AI is an early guide, designed to help you notice possible issues sooner. It does not replace a diagnosis from an agricultural professional.</p></section>
+    <footer className="footer wrap"><a className="brand" href="#top"><span className="brand-mark"><Sprout size={17} /></span><b>cropguard<span>.ai</span></b></a><span>Thoughtful tools for healthier crops.</span><span>© {new Date().getFullYear()} CropGuard AI</span></footer>
+  </main>;
 }
