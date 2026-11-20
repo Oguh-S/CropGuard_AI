@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight, CalendarDays, Check, ChevronDown, CircleUserRound, Leaf,
-  LoaderCircle, LogOut, Menu, ShieldCheck, Sprout, UploadCloud, X,
+  LoaderCircle, LogOut, Menu, Moon, ShieldCheck, Sprout, Sun, UploadCloud, X,
 } from 'lucide-react';
 
 const API = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '') + '/api';
@@ -39,10 +39,16 @@ function historyStorageKey(username) {
   return username ? `cropguard.history.${username.toLowerCase()}` : '';
 }
 
+function ThemeToggle({ theme, onToggle, className = '' }) {
+  const nextTheme = theme === 'dark' ? 'light' : 'dark';
+  return <button type="button" className={`theme-toggle ${className}`} onClick={onToggle} aria-label={`Switch to ${nextTheme} mode`} aria-pressed={theme === 'dark'} title={`Switch to ${nextTheme} mode`}><span aria-hidden="true">{theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}</span><span className="sr-only">Switch to {nextTheme} mode</span></button>;
+}
+
 export default function App() {
   const input = useRef(null);
   const [screen, setScreen] = useState(() => routeName(window.location.pathname));
   const [activeNav, setActiveNav] = useState(() => navName(window.location.pathname + window.location.hash));
+  const [theme, setTheme] = useState(() => localStorage.getItem('cropguard.theme') || 'light');
   const [token, setToken] = useState(() => localStorage.getItem('cropguard.access') || '');
   const [user, setUser] = useState(null);
   const [mode, setMode] = useState('login');
@@ -56,6 +62,15 @@ export default function App() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [menu, setMenu] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('cropguard.theme', theme);
+  }, [theme]);
+
+  function toggleTheme() {
+    setTheme((current) => current === 'dark' ? 'light' : 'dark');
+  }
 
   function navigate(path) {
     window.history.pushState({}, '', path);
@@ -212,6 +227,7 @@ export default function App() {
   if (screen === 'login') {
     return <main className="account-page">
       <a className="brand account-brand" href="/" onClick={(event) => { event.preventDefault(); navigate('/'); }}><span className="brand-mark"><Sprout size={20} /></span><b>CropGuard AI</b></a>
+      <ThemeToggle theme={theme} onToggle={toggleTheme} className="account-theme" />
       <div className="account-layout">
         <section className="account-story">
           <span className="account-kicker"><i /> GROW WITH MORE CONFIDENCE</span>
@@ -240,7 +256,7 @@ export default function App() {
 
   if (screen === 'welcome') {
     return <main className="welcome-page">
-      <div className="welcome-top"><a className="brand" href="/" onClick={(event) => { event.preventDefault(); navigate('/'); }}><span className="brand-mark"><Sprout size={20} /></span><b>CropGuard AI</b></a>{token && <button className="button signout-button" onClick={signout}><LogOut size={15} /> Sign out</button>}</div>
+      <div className="welcome-top"><a className="brand" href="/" onClick={(event) => { event.preventDefault(); navigate('/'); }}><span className="brand-mark"><Sprout size={20} /></span><b>CropGuard AI</b></a><div className="welcome-actions"><ThemeToggle theme={theme} onToggle={toggleTheme} />{token && <button className="button signout-button" onClick={signout}><LogOut size={15} /> Sign out</button>}</div></div>
       <section className="welcome-center" aria-live="polite">
         <div className="welcome-animation"><span className="welcome-ring ring-a"/><span className="welcome-ring ring-b"/><span className="welcome-sprout"><Sprout size={50} /></span><span className="welcome-check"><Check size={18} /></span></div>
         <span className="account-kicker"><i /> YOUR GROWING JOURNEY STARTS HERE</span>
@@ -259,6 +275,7 @@ export default function App() {
         <a className={activeNav === 'landing' ? 'active' : ''} aria-current={activeNav === 'landing' ? 'page' : undefined} href="/how-it-works" onClick={(event) => { event.preventDefault(); navigate('/how-it-works'); }}>How it works</a><a className={activeNav === 'check' ? 'active' : ''} aria-current={activeNav === 'check' ? 'page' : undefined} href="/check#diagnose" onClick={(event) => { event.preventDefault(); navigate('/check#diagnose'); }}>Check a leaf</a><a className={activeNav === 'crops' ? 'active' : ''} aria-current={activeNav === 'crops' ? 'page' : undefined} href="/crops" onClick={(event) => { event.preventDefault(); navigate('/crops'); }}>Crops</a><a className={activeNav === 'about' ? 'active' : ''} aria-current={activeNav === 'about' ? 'page' : undefined} href="/about" onClick={(event) => { event.preventDefault(); navigate('/about'); }}>About</a><a className={activeNav === 'privacy' ? 'active' : ''} aria-current={activeNav === 'privacy' ? 'page' : undefined} href="/privacy" onClick={(event) => { event.preventDefault(); navigate('/privacy'); }}>Privacy Policy</a>
       </nav>
       <div className="top-actions">
+        <ThemeToggle theme={theme} onToggle={toggleTheme} />
         {user ? <><span className="signed-name">Hi, {user.username}</span><button className="button signout-button" onClick={signout}><LogOut size={15} /> Sign out</button></> : <button className="button outline" onClick={() => navigate('/')}>Sign in <ArrowRight size={15} /></button>}
         <button className="menu-toggle" onClick={() => setMenu(!menu)} aria-label="Navigation">{menu ? <X /> : <Menu />}</button>
       </div>
