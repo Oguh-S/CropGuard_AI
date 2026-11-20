@@ -95,6 +95,17 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (screen !== 'welcome') return undefined;
+    const timer = window.setTimeout(() => {
+      window.history.replaceState({}, '', '/how-it-works');
+      setScreen('landing');
+      setActiveNav('landing');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 5000);
+    return () => window.clearTimeout(timer);
+  }, [screen]);
+
+  useEffect(() => {
     if (!token) {
       setUser(null);
       return;
@@ -262,7 +273,9 @@ export default function App() {
         <span className="account-kicker"><i /> YOUR GROWING JOURNEY STARTS HERE</span>
         <h1>Welcome{user?.username ? `, ${user.username}` : ''}.</h1>
         <p>Your crop checks and next steps are ready whenever you are.</p>
-        <button className="button account-submit continue-button" onClick={() => navigate('/how-it-works')}>Continue to CropGuard AI <ArrowRight size={17} /></button>
+        <div className="welcome-progress" aria-hidden="true"><span /></div>
+        <small className="welcome-next">Opening your field guide…</small>
+        <button className="button account-submit continue-button" onClick={() => navigate('/how-it-works')}>Continue now <ArrowRight size={17} /></button>
       </section>
       <span className="welcome-footer">A clearer first look at plant health.</span>
     </main>;
