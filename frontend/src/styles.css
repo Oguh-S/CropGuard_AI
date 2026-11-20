@@ -83,6 +83,7 @@
 .history-empty b{font:700 12px Manrope,sans-serif}
 .history-empty p{font-size:10px;color:#777e74;margin:5px 0 0}
 .history-empty button,.history-empty a{display:flex;align-items:center;gap:7px;border:0;background:none;color:var(--green);font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap}
+.page-cta{margin-top:32px}.text-link{display:inline-flex;align-items:center;gap:8px;padding:0;border:0;background:none;color:var(--green);font-size:12px;font-weight:700;cursor:pointer}
 .hero-art .note{background:#fff;color:#242b23}
 .advice-card{border-color:#dfe5d8;background:#f4f7f0}
 @keyframes welcomeRing{0%{transform:scale(.65);opacity:.7}100%{transform:scale(1.55);opacity:0}}

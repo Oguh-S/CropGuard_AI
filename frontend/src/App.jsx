@@ -6,7 +6,14 @@ import {
 
 const API = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '') + '/api';
 const crops = ['Cashew', 'Cassava', 'Maize', 'Tomato'];
-const routeName = (path) => path === '/login' ? 'login' : path === '/welcome' ? 'welcome' : 'landing';
+const routeName = (path) => {
+  if (path === '/' || path === '/login') return 'login';
+  if (path === '/welcome') return 'welcome';
+  if (path === '/check') return 'check';
+  if (path === '/crops') return 'crops';
+  if (path === '/about') return 'about';
+  return 'landing';
+};
 
 async function call(path, options = {}) {
   const response = await fetch(API + path, options);
@@ -42,10 +49,14 @@ export default function App() {
 
   function navigate(path) {
     window.history.pushState({}, '', path);
-    setScreen(routeName(path));
+    setScreen(routeName(path.split('#')[0]));
     setMenu(false);
     setError('');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const anchor = path.split('#')[1];
+    requestAnimationFrame(() => {
+      if (anchor) document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   }
 
   useEffect(() => {
@@ -134,7 +145,7 @@ export default function App() {
     event.preventDefault();
     setError('');
     if (!token) {
-      navigate('/login');
+      navigate('/');
       setNotice('Sign in to run a diagnosis.');
       return;
     }
@@ -207,7 +218,7 @@ export default function App() {
             {error && <div className="feedback bad" role="alert">{error}</div>}
           </form>
           <p className="switch">{mode === 'login' ? 'New to CropGuard?' : 'Already have an account?'} <button onClick={() => { setError(''); setMode(mode === 'login' ? 'register' : 'login'); }}>{mode === 'login' ? 'Create an account' : 'Sign in'}</button></p>
-          <button className="back-link" onClick={() => navigate('/')}><ArrowRight size={14} className="back-arrow" /> Back to CropGuard</button>
+          <button className="back-link" onClick={() => navigate('/how-it-works')}><ArrowRight size={14} className="back-arrow" /> Explore CropGuard</button>
         </section>
       </div>
     </main>;
@@ -221,7 +232,7 @@ export default function App() {
         <span className="account-kicker"><i /> YOUR GROWING JOURNEY STARTS HERE</span>
         <h1>Welcome{user?.username ? `, ${user.username}` : ''}.</h1>
         <p>Your crop checks and next steps are ready whenever you are.</p>
-        <button className="button account-submit continue-button" onClick={() => navigate('/')}>Continue to CropGuard <ArrowRight size={17} /></button>
+        <button className="button account-submit continue-button" onClick={() => navigate('/check')}>Continue to CropGuard <ArrowRight size={17} /></button>
       </section>
       <span className="welcome-footer">A clearer first look at plant health.</span>
     </main>;
@@ -229,34 +240,38 @@ export default function App() {
 
   return <main>
     <header className="topbar wrap" id="top">
-      <a className="brand" href="#top"><span className="brand-mark"><Sprout size={20} /></span><b>cropguard<span>.ai</span></b></a>
+      <a className="brand" href="/how-it-works" onClick={(event) => { event.preventDefault(); navigate('/how-it-works'); }}><span className="brand-mark"><Sprout size={20} /></span><b>cropguard<span>.ai</span></b></a>
       <nav className={menu ? 'nav nav-open' : 'nav'}>
-        <a href="#diagnose" onClick={() => setMenu(false)}>Check a leaf</a><a href="#history" onClick={() => setMenu(false)}>History</a><a href="#how" onClick={() => setMenu(false)}>How it works</a><a href="#crops" onClick={() => setMenu(false)}>Crops</a>
+        <a href="/how-it-works" onClick={(event) => { event.preventDefault(); navigate('/how-it-works'); }}>How it works</a><a href="/check#diagnose" onClick={(event) => { event.preventDefault(); navigate('/check#diagnose'); }}>Check a leaf</a><a href="/check#history" onClick={(event) => { event.preventDefault(); navigate('/check#history'); }}>History</a><a href="/crops" onClick={(event) => { event.preventDefault(); navigate('/crops'); }}>Crops</a><a href="/about" onClick={(event) => { event.preventDefault(); navigate('/about'); }}>About</a>
       </nav>
       <div className="top-actions">
-        {user ? <><span className="signed-name">Hi, {user.username}</span><button className="button signout-button" onClick={signout}><LogOut size={15} /> Sign out</button></> : <button className="button outline" onClick={() => { setMode('login'); navigate('/login'); }}>Sign in <ArrowRight size={15} /></button>}
+        {user ? <><span className="signed-name">Hi, {user.username}</span><button className="button signout-button" onClick={signout}><LogOut size={15} /> Sign out</button></> : <button className="button outline" onClick={() => navigate('/')}>Sign in <ArrowRight size={15} /></button>}
         <button className="menu-toggle" onClick={() => setMenu(!menu)} aria-label="Navigation">{menu ? <X /> : <Menu />}</button>
       </div>
     </header>
 
-    <section className="hero wrap"><div><div className="eyebrow"><i /> A clearer first look at plant health</div><h1>Know what’s<br />growing <em>wrong.</em></h1><p className="lede">A leaf can tell you a lot. Take a photo, get an AI-powered first look, and take your next step with more confidence.</p><a className="button dark" href="#diagnose">Check a leaf <ArrowRight size={17} /></a><div className="proof"><span className="proof-icon">✳</span> Made with farmers in mind <b>·</b> 4 crop families</div></div><div className="hero-art"><div className="sun" /><div className="rings" /><div className="leaf-art"><i /><i /><i /></div><div className="scan-tag"><i /> PLANT SCAN, SIMPLIFIED</div><div className="note"><ShieldCheck size={18} /><span><b>A better first step</b><small>Spot signs, act sooner</small></span><ArrowRight size={15} /></div><div className="caption">01 / 04 <span>Healthy crops start with attention</span></div></div></section>
-    <div className="trust wrap"><span>BUILT FOR THE CROPS YOU GROW</span>{crops.map((cropName, index) => <b key={cropName}><i className={`crop-dot dot${index}`} />{cropName}</b>)}</div>
+    {screen === 'landing' && <>
+      <section className="hero wrap"><div><div className="eyebrow"><i /> A clearer first look at plant health</div><h1>Know what’s<br />growing <em>wrong.</em></h1><p className="lede">A leaf can tell you a lot. Take a photo, get an AI-powered first look, and take your next step with more confidence.</p><button className="button dark" onClick={() => navigate('/check#diagnose')}>Check a leaf <ArrowRight size={17} /></button><div className="proof"><span className="proof-icon">✳</span> Made with farmers in mind <b>·</b> 4 crop families</div></div><div className="hero-art"><div className="sun" /><div className="rings" /><div className="leaf-art"><i /><i /><i /></div><div className="scan-tag"><i /> PLANT SCAN, SIMPLIFIED</div><div className="note"><ShieldCheck size={18} /><span><b>A better first step</b><small>Spot signs, act sooner</small></span><ArrowRight size={15} /></div><div className="caption">01 / 04 <span>Healthy crops start with attention</span></div></div></section>
+      <div className="trust wrap"><span>BUILT FOR THE CROPS YOU GROW</span>{crops.map((cropName, index) => <b key={cropName}><i className={`crop-dot dot${index}`} />{cropName}</b>)}</div>
+    </>}
 
+    {screen === 'check' && <>
     <section className="diagnose" id="diagnose"><div className="wrap diag-grid"><div className="intro"><div className="eyebrow"><i /> Your next step starts here</div><h2>Let’s take a<br /><em>closer look.</em></h2><p>Upload a well-lit photo of one leaf. CropGuard AI will compare it with the signs it has learned to recognize.</p><div className="privacy"><ShieldCheck size={18} />Your photo is used to create this result and is not saved to your profile.</div></div>
       <form className="upload-card" onSubmit={diagnose}><div className="card-head"><div><small>STEP 01 — ADD A PHOTO</small><h3>Start with a leaf</h3></div><span>01</span></div><div className={`dropzone ${preview ? 'has-image' : ''}`} onClick={(event) => { if (event.target !== input.current) input.current?.click(); }} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); pick(event.dataTransfer.files[0]); }} role="button" tabIndex="0" aria-label="Choose or drop a crop leaf photo" onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); input.current?.click(); } }}><input ref={input} hidden type="file" accept="image/*" onClick={(event) => event.stopPropagation()} onChange={(event) => { pick(event.target.files[0]); event.target.value = ''; }} />{preview ? <><img src={preview} alt="Selected crop leaf" /><span className="replace"><UploadCloud size={16} />Choose another image</span></> : <><span className="upload-icon"><UploadCloud size={22} /></span><b>Drop your leaf photo here</b><span>or <u>browse files</u> on your device</span><small>JPG, PNG · Up to 10 MB</small></>}</div>
       <div className="crop-select"><span><b>CROP TYPE</b><small>Compare this with the model’s result</small></span><label><select value={crop} onChange={(event) => setCrop(event.target.value)}><option value="">No selection</option>{crops.map((cropName) => <option key={cropName}>{cropName}</option>)}</select><ChevronDown size={15} /></label></div>
       <button className="button dark submit" disabled={busy}>{busy ? <><LoaderCircle className="spin" size={17} /> Looking at your leaf…</> : <>Get my first look <ArrowRight size={17} /></>}</button>
       {(error || notice) && <div className={`feedback ${error ? 'bad' : ''}`} role="status">{error || notice}</div>}
       {result && <><div className="result"><span><Leaf size={19} /></span><div><small>POTENTIAL MATCH</small><b>{label(result.disease)}</b><p>{Number(result.confidence).toFixed(1)}% model confidence</p>{crop && result.disease.split('___')[0].toLowerCase() !== crop.toLowerCase() && <p className="crop-warning">You selected {crop}; check that the photo shows this crop.</p>}</div><Check size={17} /></div><section className="advice-card" aria-labelledby="advice-title"><div className="advice-heading"><span><Sprout size={18} /></span><div><small>WHAT TO DO NEXT</small><h4 id="advice-title">Suggested next steps</h4></div></div><p>{result.advice?.summary || 'Ask a local agricultural extension officer to confirm this result.'}</p><ul>{(result.advice?.actions || ['Inspect several plants for the same signs.', 'Contact a local agricultural extension officer for crop-specific advice.']).map((action, index) => <li key={index}>{action}</li>)}</ul>{result.advice?.source && <a className="advice-source" href={result.advice.source.url} target="_blank" rel="noreferrer">Source: {result.advice.source.name} <ArrowRight size={13} /></a>}<small className="advice-note">A photo match is not a confirmed diagnosis. Follow local guidance and product labels before using any pesticide.</small></section></>}
-      {!token && <p className="hint">You’ll need to <button type="button" onClick={() => navigate('/login')}>sign in</button> before your first analysis.</p>}</form></div></section>
+      {!token && <p className="hint">You’ll need to <button type="button" onClick={() => navigate('/')}>sign in</button> before your first analysis.</p>}</form></div></section>
 
     <section className="history-section wrap" id="history"><div className="history-head"><div><div className="eyebrow"><i /> YOUR FIELD NOTES</div><h2>Recent <em>checks.</em></h2><p>Keep an eye on the changes you’ve noticed in your crops.</p></div>{user ? <span className="history-count"><CalendarDays size={15} /> {history.length} saved {history.length === 1 ? 'check' : 'checks'}</span> : <button className="button outline" onClick={() => navigate('/login')}>Sign in to save checks <ArrowRight size={14} /></button>}</div>
-      {user && history.length ? <div className="history-grid">{history.slice(0, 4).map((entry) => <article className="history-card" key={entry.id}><span className="history-icon"><Leaf size={18} /></span><div className="history-card-content"><small>{new Date(entry.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</small><b>{label(entry.disease)}</b><span>{Number(entry.confidence).toFixed(1)}% model confidence</span></div><ArrowRight size={16} /></article>)}</div> : <div className="history-empty"><span><CircleUserRound size={22} /></span><div><b>{user ? 'Your crop checks will appear here.' : 'Your next check starts with a photo.'}</b><p>{user ? 'Run a diagnosis and your latest results will be saved on this device.' : 'Sign in to keep your recent checks together.'}</p></div>{user ? <a href="#diagnose">Check a leaf <ArrowRight size={15} /></a> : <button onClick={() => navigate('/login')}>Sign in <ArrowRight size={15} /></button>}</div>}
+      {user && history.length ? <div className="history-grid">{history.slice(0, 4).map((entry) => <article className="history-card" key={entry.id}><span className="history-icon"><Leaf size={18} /></span><div className="history-card-content"><small>{new Date(entry.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</small><b>{label(entry.disease)}</b><span>{Number(entry.confidence).toFixed(1)}% model confidence</span></div><ArrowRight size={16} /></article>)}</div> : <div className="history-empty"><span><CircleUserRound size={22} /></span><div><b>{user ? 'Your crop checks will appear here.' : 'Your next check starts with a photo.'}</b><p>{user ? 'Run a diagnosis and your latest results will be saved on this device.' : 'Sign in to keep your recent checks together.'}</p></div>{user ? <a href="#diagnose">Check a leaf <ArrowRight size={15} /></a> : <button onClick={() => navigate('/')}>Sign in <ArrowRight size={15} /></button>}</div>}
     </section>
+    </>}
 
-    <section className="how wrap" id="how"><div className="eyebrow"><i /> Simple by design</div><div className="how-title"><h2>A little insight.<br /><em>A lot more clarity.</em></h2><p>Keep it simple: one photo, one starting point, and a clearer idea of what to do next.</p></div><div className="steps"><article><small>01</small><span className="step-icon">↗</span><h3>Share a photo</h3><p>Choose a clear picture of the affected leaf in natural light.</p></article><article><small>02</small><span className="step-icon gold">✳</span><h3>Get a first look</h3><p>Our image model checks for patterns across supported crop conditions.</p></article><article><small>03</small><span className="step-icon blue">✓</span><h3>Plan your next step</h3><p>Use the result to start a conversation with someone who knows your crop.</p></article></div></section>
-    <section className="crops" id="crops"><div className="wrap crop-inner"><div><div className="eyebrow"><i /> In the field</div><h2>Focused on crops<br />that <em>matter.</em></h2></div><div className="crop-list">{crops.map((cropName, index) => <div className="crop-row" key={cropName}><span>0{index + 1}</span><b>{cropName}</b><small><i /> Supported crop</small><ArrowRight size={16} /></div>)}</div></div></section>
-    <section className="closing wrap" id="about"><span className="closing-icon"><Sprout /></span><div><div className="eyebrow"><i /> A helpful place to begin</div><h2>Better questions<br />start with <em>a closer look.</em></h2><a href="#diagnose">Check a leaf <ArrowRight size={16} /></a></div><p>CropGuard AI is an early guide, designed to help you notice possible issues sooner. It does not replace a diagnosis from an agricultural professional.</p></section>
-    <footer className="footer wrap"><a className="brand" href="#top"><span className="brand-mark"><Sprout size={17} /></span><b>cropguard<span>.ai</span></b></a><span>Thoughtful tools for healthier crops.</span><span>© {new Date().getFullYear()} CropGuard AI</span></footer>
+    {screen === 'landing' && <section className="how wrap" id="how"><div className="eyebrow"><i /> Simple by design</div><div className="how-title"><h2>A little insight.<br /><em>A lot more clarity.</em></h2><p>Keep it simple: one photo, one starting point, and a clearer idea of what to do next.</p></div><div className="steps"><article><small>01</small><span className="step-icon">↗</span><h3>Share a photo</h3><p>Choose a clear picture of the affected leaf in natural light.</p></article><article><small>02</small><span className="step-icon gold">✳</span><h3>Get a first look</h3><p>Our image model checks for patterns across supported crop conditions.</p></article><article><small>03</small><span className="step-icon blue">✓</span><h3>Plan your next step</h3><p>Use the result to start a conversation with someone who knows your crop.</p></article></div><button className="button dark page-cta" onClick={() => navigate('/check')}>Start a leaf check <ArrowRight size={16} /></button></section>}
+    {screen === 'crops' && <section className="crops" id="crops"><div className="wrap crop-inner"><div><div className="eyebrow"><i /> In the field</div><h2>Focused on crops<br />that <em>matter.</em></h2></div><div className="crop-list">{crops.map((cropName, index) => <div className="crop-row" key={cropName}><span>0{index + 1}</span><b>{cropName}</b><small><i /> Supported crop</small><ArrowRight size={16} /></div>)}</div></div></section>}
+    {screen === 'about' && <section className="closing wrap" id="about"><span className="closing-icon"><Sprout /></span><div><div className="eyebrow"><i /> A helpful place to begin</div><h2>Better questions<br />start with <em>a closer look.</em></h2><button className="text-link" onClick={() => navigate('/check')}>Check a leaf <ArrowRight size={16} /></button></div><p>CropGuard AI is an early guide, designed to help you notice possible issues sooner. It does not replace a diagnosis from an agricultural professional.</p></section>}
+    <footer className="footer wrap"><a className="brand" href="/how-it-works" onClick={(event) => { event.preventDefault(); navigate('/how-it-works'); }}><span className="brand-mark"><Sprout size={17} /></span><b>cropguard<span>.ai</span></b></a><span>Thoughtful tools for healthier crops.</span><span>© {new Date().getFullYear()} CropGuard AI</span></footer>
   </main>;
 }
